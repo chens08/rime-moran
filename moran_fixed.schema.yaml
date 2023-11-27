@@ -63,7 +63,7 @@ speller:
 
 ascii_composer:
   switch_key:
-    Shift_L: commit_code
+    #Shift_L: commit_code #此项设置导致Cap_Lock功能不正常，注释后可以正常切换
 
 translator:
   dictionary: moran_fixed
