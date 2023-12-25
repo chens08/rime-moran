@@ -1,16 +1,19 @@
 #!/bin/bash
 
+STRICT="$1"
+
+echo Strict about errors? $STRICT
+
 compact_dicts=(
     "../moran.essay.dict.yaml"
     "../moran.tencent.dict.yaml"
-    "../moran.genshin.dict.yaml"
     "../moran.moe.dict.yaml"
     "../moran.thuocl.dict.yaml"
 )
 
-UPDATE_LINE_RE='^.+\t'
+UPDATE_LINE_RE=$'^.+\t'
 
-#set -x
+set -x
 
 # Extract the words from foo.dict.yaml into foo.in.
 extract_dict() {
@@ -34,8 +37,16 @@ update_compact_dict() {
     if grep '^# BAD' "$OUTPUT_FILE"
     then
         echo '!!! BAD DICT !!!'
-        rm -f $INPUT_FILE $HEADER_FILE
-        return 1
+
+        # Still allow grep to show bad entries.
+        if [ x$STRICT = x"yes" ]; then
+            rm -f $INPUT_FILE $HEADER_FILE
+            return 1
+        else
+            cat "$HEADER_FILE" "$OUTPUT_FILE" > "$DICT_FILE"
+            rm -f $INPUT_FILE $HEADER_FILE $OUTPUT_FILE
+            return 0
+        fi
     else
         cat "$HEADER_FILE" "$OUTPUT_FILE" > "$DICT_FILE"
         rm -f $INPUT_FILE $HEADER_FILE $OUTPUT_FILE

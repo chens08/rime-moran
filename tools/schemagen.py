@@ -16,7 +16,6 @@ from collections import *
 from itertools import *
 import zrmify
 import flypyify
-import pandas
 import math
 import opencc
 from pypinyin import lazy_pinyin
@@ -26,7 +25,7 @@ import regex
 
 
 double_pinyin_choices = ['zrm', 'flypy']
-auxiliary_code_choices = ['zrm', 'hanxin']
+auxiliary_code_choices = ['zrm', 'hanxin', 'tiger']
 
 args = None
 auxiliary_table = defaultdict(list)
@@ -69,6 +68,8 @@ def to_auxiliary_codes(char):
                 auxiliary_table = read_txt_table('data/zrmdb.txt')
             case 'hanxin':
                 auxiliary_table = read_txt_table('data/hanxindb.txt')
+            case 'tiger':
+                auxiliary_table = read_txt_table('data/tigerdb.txt')
             case _:
                 raise ValueError('Unknown auxiliary code ' + args.auxiliary_code)
     return auxiliary_table[char]
@@ -105,7 +106,10 @@ def iter_char_codes(char, pinyin):
 
 def char_codes(char, pinyin):
     if 'compact' in args and args.compact:
-        return [next(iter_char_codes(char, pinyin))]
+        try:
+            return [next(iter_char_codes(char, pinyin))]
+        except StopIteration:
+            return []
     else:
         return list(iter_char_codes(char, pinyin))
 
@@ -129,7 +133,7 @@ def handle_gen_chars():
 opencc_for_pinyin = None
 def word_to_pinyin(word):
     global opencc_for_pinyin
-    if args and args.opencc_for_pinyin:
+    if args and 'opencc_for_pinyin' in args:
         if not opencc_for_pinyin:
             opencc_for_pinyin = opencc.OpenCC(args.opencc_for_pinyin)
         maybe_pinyin = ' '.join(lazy_pinyin(opencc_for_pinyin.convert(word)))
@@ -194,8 +198,9 @@ def handle_gen_dict():
                 print(f'{output_word}\t{code}')
             else:
                 # 輔助碼與 output_word 一致, 詞頻由 word 決定
-                weight = pinyin_weight(word, pinyin)
-                weight = int(weight * float(args.freq_scale))
+                if not weight:
+                    weight = pinyin_weight(word, pinyin)
+                    weight = int(weight * float(args.freq_scale))
                 print(f'{output_word}\t{code}\t{weight}')
 
 
@@ -282,9 +287,9 @@ def handle_gen_fixed():
     for (word, pinyin, weight) in read_input_dict():
         if len(word) > 1:
             try:
-                # words.append((pinyin_weight(word, pinyin), word, encode_fixed_word(word, pinyin)))
-                for code in encode_fixed_word_sunshine_strategy(word, pinyin):
-                    words.append((pinyin_weight(word, pinyin), word, code))
+                words.append((pinyin_weight(word, pinyin), word, encode_fixed_word(word, pinyin)))
+                # for code in encode_fixed_word_sunshine_strategy(word, pinyin):
+                #     words.append((pinyin_weight(word, pinyin), word, code))
             except:
                 traceback.print_exc()
 
@@ -368,6 +373,33 @@ def handle_update_compact_dict():
                 print(f'{word}\t{newcode}')
 
 
+def handle_update_char_weight():
+    initialize_pinyin_table()
+    with open(args.rime_dict) as f:
+        for l in f:
+            l = l.strip()
+            m = regex.match(r'^([^\t])\t([a-z][a-z];[a-z][a-z])\t(\d+)(.*)$', l)
+            if not m:
+                print(l)
+            else:
+                char = m[1]
+                code = m[2]
+                weight = int(m[3])
+                comment = m[4]
+
+                sp = code.split(';')[0]
+                wt = pinyin_table.get(char, {})
+                for (py, w) in wt.items():
+                    try:
+                        if to_double_pinyin(py) == sp:
+                            weight = w
+                            break
+                    except:
+                        weight = w
+
+                print(f'{char}\t{code}\t{weight}{comment}')
+
+
 ###############
 ### 程序入口 ###
 ###############
@@ -404,6 +436,9 @@ gen_fixed.add_argument('--aabc', action='store_true', default=False, help='三�
 update_compact_dict = subparsers.add_parser('update-compact-dict', help='更新 *compact* 詞庫中的輔助碼爲新輔助碼')
 update_compact_dict.add_argument('--rime-dict', help='輸入rime格式詞庫（無frontmatter）', required=True)
 
+update_char_weight = subparsers.add_parser('update-char-weight', help='更新 chars 詞庫中的詞頻')
+update_char_weight.add_argument('--rime-dict', help='輸入rime格式詞庫', required=True)
+
 if __name__ == '__main__':
     args = parser.parse_args()
     if args.command == 'gen-chars':
@@ -414,3 +449,5 @@ if __name__ == '__main__':
         handle_gen_fixed()
     elif args.command == 'update-compact-dict':
         handle_update_compact_dict()
+    elif args.command == 'update-char-weight':
+        handle_update_char_weight()

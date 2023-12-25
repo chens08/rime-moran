@@ -1,0 +1,24 @@
+on: [push]
+jobs:
+  simplified-moran:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip3 install opencc pypinyin regex
+      - run: sudo apt install opencc p7zip-full
+      - run: ./make_simp_dist.sh github
+      - uses: actions/upload-artifact@v3
+        with:
+          name: "简体完整配置包"
+          path: dist/**
+      - uses: actions/upload-artifact@v3
+        with:
+          name: "仅简体词库"
+          path: |
+            dist/moran.essay.dict.yaml
+            dist/moran.tencent.dict.yaml
+            dist/moran.moe.dict.yaml
+            dist/moran.thuocl.dict.yaml
+            dist/moran.computer.dict.yaml
+            dist/moran.hanyu.dict.yaml
+            dist/moran.words.dict.yaml

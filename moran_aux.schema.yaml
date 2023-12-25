@@ -1,55 +1,53 @@
 schema:
-  schema_id: moran
-  name: 魔然
-  version: "20231125"
+  schema_id: moran_aux
+  name: 魔然·輔篩
+  version: "20231206"
   author:
     - 自然碼發明人：周志農
     - 方案製作：ksqsf
   description: |
-    爲傳承字設計的自然碼及輔助碼智能整句輸入方案。
+    在輸入完畢雙拼碼後，可以輸入輔助碼篩選候選項，與「魔然」方案不同。
   dependencies:
-    - moran_fixed
-    - moran_sentence
-    - moran_reverse
-    - moran_english
-    #- moran_japanese # 日語混輸
-    - stroke
     - tiger
-    - cangjie5
-    - zrlf
+    - moran_english
+    #- moran_japanese
 
 switches:
   - name: ascii_mode
+    reset: 0
     states: [ 中文, 西文 ]
   - name: full_shape
     states: [ 半角, 全角 ]
   - name: simplification
+    reset: 1
     states: [ 漢字, 汉字 ]
   - name: ascii_punct
     states: [ 。，, ．， ]
   - options: [ utf8, gbk+emoji, big5+emoji ]
-    reset: 1
-    states: [ UTF-8, GBK, BIG5 ]
-  - name: flexible
-    states: [ 固詞, 動詞 ] # 「固詞」表示「固頂詞」
-    reset: 1
+    reset: 0
+    states:
+    - UTF-8
+    - GBK
+    - BIG5
   - name: emoji
     reset: 1
     states: [ 🈚, 🈶 ]
   - name: unicode_comment
-    states: [ U關, U開 ]
+    reset: 0
+    states: [ U開, U關 ]
+  - name: dzing
+    reset: 0
+    states: [ 通, 寍 ]
   - options: [ std_opencc,  std_tw, std_hk, std_dzing ]
     states: [ 通, 臺, 港, 寍 ]
 
 engine:
   processors:
     - key_binder
-    - lua_processor@*moran_semicolon_processor
     - ascii_composer
     - recognizer
     - speller
     - punctuator
-    - lua_processor@*moran_launcher     # 輸入 omorj 或 ogrwh 後回車打開魔然官網
     - selector
     - navigator
     - express_editor
@@ -61,63 +59,38 @@ engine:
     - fallback_segmentor
   translators:
     - punct_translator
-    - reverse_lookup_translator@reverse_universal
-    - reverse_lookup_translator@reverse_tiger
-    - reverse_lookup_translator@reverse_stroke
-    - reverse_lookup_translator@reverse_cangjie5
-    - reverse_lookup_translator@reverse_zrlf
+    - reverse_lookup_translator
     - table_translator@custom_phrase       # 自定義短語
-    - table_translator@english             # 英語混輸
+    #- table_translator@english             # 英語混輸
     #- table_translator@japanese            # 日語混輸
-    - lua_translator@*moran_express_translator@with_reorder # 翻譯器
-    - lua_translator@*moran_shijian        # 日期orq 節氣ojq 星期oxq 時間osj
-    - lua_translator@*moran_number         # 數字轉大寫
+    - lua_translator@*moran_aux_translator
   filters:
-    - lua_filter@*moran_reorder_filter
-    - lua_filter@*moran_aux_hint
-    - simplifier@emoji
+    #- lua_filter@*moran_aux_hint           # 輔助碼提示需要去掉本行開頭的 # 符號
+    - simplifier
     - charset_filter@gbk+emoji
     - charset_filter@big5+emoji
-    - simplifier@std_hk
+    - simplifier@emoji
     - simplifier@std_tw
+    - simplifier@std_hk
     - simplifier@std_dzing
-    - simplifier
-    - lua_filter@*moran_charset_comment_filter  # Unicode 區位提示
-    - lua_filter@*moran_unicode_display_filter  # Unicode 編碼提示
     - uniquifier
 
 speller:
   alphabet: abcdefghijklmnopqrstuvwxyz
   delimiter: " '"
   algebra:
-    - derive/^(.+);(\w)(\w)$/$1$2$3o/ # 全碼 YYXXo
-    - abbrev/^(.+);(\w)(\w)$/$1$2$3/  # 降低 YYXX 優先級
-    - derive/^(.+);(\w)(\w)$/$1$2/    # 構詞可以用 YYX
-    - derive/^(.+);(\w)(\w)$/$1/      # 構詞可以用 YY
-    #- abbrev/^([a-z]).+$/$1/           # 首字母簡拼（※ 嚴重影響出字速度，不建議開啓）
+    - derive/^(.*);(\w)(\w)$/$1/      # 構詞可以用 YY
 
 ascii_composer:
   switch_key:
-    #Shift_L: commit_code #此项设置导致Cap_Lock功能不正常，注释后可以正常切换
+    Shift_L: commit_code
 
-translator:    # 整句輸入模式設置，在 top_translator 中被調用
+translator:
   dictionary: moran.extended
-  prism: moran
-  initial_quality: 5
-  max_homophones: 7
-  spelling_hints: 3
-  contextual_suggestions: true
+  prism: moran_aux
+  initial_quality: 0
   preedit_format:
     - xform/([a-z][a-z][a-z][a-z])o/$1°/
-
-fixed:         # 固頂輸入模式設置，在 top_translator 中被調用
-  initial_quality: 100
-  dictionary: moran_fixed
-  enable_completion: false
-  enable_sentence: false
-  enable_user_dict: false
-  enable_encoder: false
-  encode_commit_history: true
 
 custom_phrase: # 自定義短語
   dictionary: ""
@@ -125,101 +98,44 @@ custom_phrase: # 自定義短語
   db_class: stabledb
   enable_completion: false
   enable_sentence: false
-  initial_quality: 1000
+  initial_quality: 10
 
 english:
-  dictionary: moran_english
-  enable_completion: true
+  dictionary: moran.english
+  enable_completion: false
   enable_sentence: false
-  enable_user_dict: true
   initial_quality: 1
-  enable_encoder: false
-  encode_commit_history: false
-  comment_format:
-    - xform/.*//
 
 japanese:
-  dictionary: moran_japanese
+  dictionary: moran.japanese
   enable_completion: false
-  enable_sentence: true
-  enable_user_dict: true
-  initial_quality: 0
-  enable_encoder: false
-  encode_commit_history: false
-  comment_format:
-    - xform/.*//
+  enable_sentence: false
+  initial_quality: 1
 
 emoji:
   opencc_config: moran_emoji.json
   option_name: emoji
-  tips: none
+  tips: all
 
 std_hk:
   opencc_config: t2hk.json
   option_name: std_hk
-  #tips: all
 
 std_tw:
   opencc_config: t2tw.json
   option_name: std_tw
-  #tips: all
 
 std_dzing:
   opencc_config: moran_dzing.json
   option_name: std_dzing
   tips: all
 
-reverse_format:
-  comment_format:
-    - xform/(\w\w);(\w\w)/$1[$2]/
-  preedit_format:
-    - xform/^o(lf|bh|cj)//
-
-reverse_tiger:
-  tag: reverse_tiger
+reverse_lookup:
   dictionary: tiger
   enable_completion: true
   prefix: "`"
+  suffix: "'"
   tips: 〔虎碼〕
-  __include: reverse_format
-
-reverse_universal:
-  tag: reverse_universal
-  dictionary: moran.chars
-  tips: 〔通配〕
-  __include: reverse_format
-
-reverse_stroke:
-  tag: reverse_stroke
-  dictionary: stroke
-  prefix: "obh"
-  enable_completion: true
-  tips: 〔橫h豎s撇p捺n折z〕
-  __include: reverse_format
-
-reverse_cangjie5:
-  tag: reverse_cangjie5
-  dictionary: cangjie5
-  prefix: "ocj"
-  enable_completion: true
-  tips: 〔倉頡五代〕
-  __include: reverse_format
-
-reverse_zrlf:
-  tag: reverse_zrlf
-  dictionary: zrlf
-  prefix: "olf"
-  enable_completion: true
-  tips: 〔兩分〕
-  __include: reverse_format
-
-reverse_lookup:
-  extra_tags:
-    - reverse_tiger
-    - reverse_universal
-    - reverse_stroke
-    - reverse_cangjie5
-    - reverse_zrlf
 
 punctuator:
   import_preset: symbols
@@ -228,10 +144,9 @@ key_binder:
   import_preset: default
   bindings:
     - {when: has_menu, accept: "Control+s", toggle: simplification}
-    - {when: has_menu, accept: "Control+u", toggle: unicode_comment}
-    - {when: has_menu, accept: "Control+q", toggle: emoji}  # q 表示表情，讓出 Ctrl+e
+    - {when: has_menu, accept: "Control+q", toggle: emoji}  # q 表示 表情, 让出 Ctrl+e
     - {when: has_menu, accept: "Control+Shift+0", toggle: std_opencc}
-    #- {when: has_menu, accept: semicolon, send: "2"}   # 被 moran_semicolon_processor 替換
+    - {when: has_menu, accept: semicolon, send: "2"}
     - {when: has_menu, accept: "Tab", send: "Control+Right"}
     - {when: composing, accept: "Tab", send: "Control+Right"}
     - {when: has_menu, accept: Shift+A, send_sequence: "{Control+Left}a{Control+Right}"}
@@ -265,25 +180,10 @@ key_binder:
 recognizer:
   import_preset: default
   patterns:
-    reverse_universal: "(^(`[a-z`]+))|(^([a-z]{2}(`[a-z`]?|[a-z`]`)))"
-    reverse_tiger: "(^`$)|(^`[a-zA-Z]+$)"
-    reverse_stroke: "^obh[A-Za-z]*$"
-    reverse_cangjie5: "^ocj[A-Za-z]*$"
-    reverse_zrlf: "^olf[A-Za-z]*$"
+    reverse_lookup: "^`[a-z]*'?$"
     punct: '^/([0-9]0?|[A-Za-z]+)$'
-
-moran:  # 兜底默認值；以防用戶不提供任何值
-  quick_code_indicator: "⚡️"
-  enable_word_filter: false
-  enable_aux_hint: false
-  ijrq:
-    enable: true
-    #defer: 5
-    show_hint: false
-    suffix: 'o'
 
 __patch:
   - moran.defaults.yaml:/patch?
   - moran_patches.yaml:/fix_opencc_t2s?
-  - moran.custom.yaml:/patch?
-
+  - moran_sentence.custom.yaml:/patch?

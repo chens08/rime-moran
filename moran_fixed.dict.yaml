@@ -6,7 +6,7 @@
 
 ---
 name: moran_fixed
-version: "20231119"
+version: "20231221"
 sort: by_weight
 columns:
   - text
@@ -21467,11 +21467,12 @@ Bilibili	bvj
 畫圖	hwtu
 畫帖	hwtx
 划艇	hwty
-砉	hwu
+华	hwu
 華沙	hwua
 崋	hwua
 滑爽	hwud
 化身	hwuf
+砉	hwuf
 花生	hwug
 畫上	hwuh
 化石	hwui
@@ -26035,7 +26036,6 @@ Bilibili	bvj
 洎	jidz
 泲	jidz
 即	jie
-際	jie
 飢餓	jiee
 際	jiej
 絕塵而去	jieq
@@ -28007,8 +28007,10 @@ Bilibili	bvj
 結駟連騎	jslq
 駉	jsm
 炅	jso
+絞絲旁	jsph
 窘迫	jspo
 計算器	jsq
+計算器	jsqi
 緊隨其後	jsqh
 迥然	jsrj
 絅	jss
@@ -28248,7 +28250,7 @@ Bilibili	bvj
 噘嘴	jtzv
 撅嘴	jtzv
 家庭作業	jtzy
-句	ju
+舉	ju
 據	ju
 巨	jua
 濟世安邦	juab
@@ -28316,7 +28318,6 @@ Bilibili	bvj
 建設單位	judw
 郹	jue
 鉅額	juee
-舉	juf
 拒	juf
 句法	jufa
 颶風	jufg
@@ -28333,9 +28334,10 @@ Bilibili	bvj
 精神分裂症	jufv
 揟	jufx
 軍事法院	jufy
-鞠	jug
+句	jug
 聚光	jugd
 橘柑	jugj
+鞠	jugj
 匊	jugm
 技術革命	jugm
 舉國	jugo
@@ -37970,7 +37972,9 @@ Bilibili	bvj
 沒日沒夜	mrmy
 貌若潘安	mrpa
 美人胚子	mrpz
+默認情況下	mrq
 盲人騎瞎馬	mrqm
+默認情況下	mrqx
 茫然若失	mrru
 美人如玉	mrry
 茫然四顧	mrsg
@@ -37980,6 +37984,8 @@ Bilibili	bvj
 貌若天仙	mrtx
 茫然失措	mruc
 盲人說象	mrux
+默認值	mrv
+默認值	mrvi
 魔然整句	mrvj
 泯然衆人	mrvr
 漠然置之	mrvv
@@ -42015,7 +42021,7 @@ PC端	pcdr
 牌子	plzi
 拍子	plzi
 排在	plzl
-騙	pm
+片	pm
 偏愛	pmai
 偏安	pman
 蓬門蓽戶	pmbh
@@ -42074,8 +42080,9 @@ PC端	pcdr
 偏離	pmli
 偏勞	pmlk
 偏流	pmlq
-駢	pmm
+騙	pmm
 騙馬	pmma
+駢	pmmb
 楩	pmmb
 楄	pmmb
 偏門	pmmf
@@ -44010,6 +44017,7 @@ PC端	pcdr
 千金一擲	qjyv
 瓊漿玉液	qjyy
 情況	qk
+情況下	qkx
 輕口薄舌	qkbu
 旗開得勝	qkdu
 乾坤大挪移	qkdy
@@ -45627,7 +45635,7 @@ PC端	pcdr
 清者自清	qvzq
 強中自有強中手	qvzu
 羣衆組織	qvzv
-卡	qw
+掐	qw
 七彎八拐	qwbg
 情文並茂	qwbm
 七歪八扭	qwbn
@@ -45667,7 +45675,8 @@ PC端	pcdr
 恰似	qwsi
 掐算	qwsr
 洽談	qwtj
-硈	qwu
+卡	qwu
+硈	qwuj
 洽商	qwuh
 磍	qwuh
 全無是處	qwui
@@ -79402,6 +79411,7 @@ WiFi	wifi
 馬尾松
 麥芽糖
 每一天
+每一天	myt
 名義上
 貿易戰
 每一種
